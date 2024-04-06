@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: schema-p
+data:
+  schema-p.json: |
+    {
+      "type": "object",
+      "properties": {
+          "firstName": {
+              "type": "string"
+          },
+          "lastName": {
+              "type": "string"
+          },
+          "age": {
+              "type": "integer"
+          }
+      },
+      "required": ["firstName", "lastName"]
+    }
+  
+---
+apiVersion: jobico.coeux.dev/v1
+kind: Job
+metadata:
+  name: job-for-python
+spec:
+  events:
+    - name: py 
+      script: main.py
+      schema:
+        key: schema-p
