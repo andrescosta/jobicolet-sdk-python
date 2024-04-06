@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 
 	"github.com/andrescosta/goico/pkg/runtimes/wasm"
 )
@@ -19,21 +20,21 @@ func main() {
 		os.Exit(1)
 	}
 	defer runtime.Close(ctx)
-	dir := os.Args[1]
-	wasmf, err := os.ReadFile(dir + "/python.wasm")
+	dirTest := os.Args[1]
+	dirSdk := os.Args[2]
+	wasmf, err := os.ReadFile(path.Join(dirTest, "/python.wasm"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error reading wasm binary: %v\n", err)
 		os.Exit(1)
 	}
 	mounts := []string{
-		dir + "/lib/python3.13:/usr/local/lib/python3.13:ro",
-		dir + "/sdk:/usr/local/lib/jobico:ro",
-		dir + "/s:/s",
+		path.Join(dirTest, "/lib/python3.13") + ":/usr/local/lib/python3.13:ro",
+		path.Join(dirSdk, "/sdk") + ":/usr/local/lib/jobico:ro",
+		path.Join(dirTest, "/hello") + ":/hello",
 	}
 	args := []string{
-		dir + "/python.wasm",
-		dir + "s/main.py",
-		"aaa",
+		path.Join(dirTest, "/python.wasm"),
+		"/hello/main.py",
 	}
 	buffIn := &bytes.Buffer{}
 	buffOut := &bytes.Buffer{}
