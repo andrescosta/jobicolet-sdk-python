@@ -14,12 +14,7 @@ import (
 
 func main() {
 	ctx := context.Background()
-	runtime, err := wasm.NewRuntimeWithCompilationCache("./cache")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error initializing Wazero: %v\n", err)
-		os.Exit(1)
-	}
-	defer runtime.Close(ctx)
+	cacheDir := "./cache"
 	dirTest := os.Args[1]
 	dirSdk := os.Args[2]
 	wasmf, err := os.ReadFile(path.Join(dirTest, "/python.wasm"))
@@ -40,7 +35,7 @@ func main() {
 	buffOut := &bytes.Buffer{}
 	buffErr := &bytes.Buffer{}
 	e := []wasm.EnvVar{{Key: "PYTHONPATH", Value: "/usr/local/lib/jobico"}}
-	modi, err := wasm.NewIntModule(ctx, runtime, wasmf, Log, mounts, args, e, buffIn, buffOut, buffErr)
+	modi, err := wasm.NewGenericModule(ctx, cacheDir, wasmf, Log)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error instantiating the module: %v\n", err)
 		fmt.Printf("Dump Error: %s\n", buffErr.String())
@@ -48,7 +43,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer modi.Close(ctx)
-	err = modi.Run(ctx)
+	err = modi.Run(ctx, mounts, args, e, buffIn, buffOut, buffErr)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error instantiating the module: %v\n", err)
 		fmt.Printf("Dump Error: %s\n", buffErr.String())
